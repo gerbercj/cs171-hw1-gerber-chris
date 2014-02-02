@@ -27,6 +27,9 @@
     .stripe0 {
       background-color: gainsboro;
     }
+    .highlight {
+      background-color: khaki;
+    }
   </style>
 </head>
 <body>
@@ -61,13 +64,22 @@
         })
       .enter()
       .append("th")
-      .text(function(d) { return d; });
+      .text(function(d) { return d; })
+      .attr("data-col", function(d,i) { return i; });
 
       var rows = tbody.selectAll("tr")
       .data(data)
       .enter()
       .append("tr")
-      .property("className", function(d,i) { return "stripe" + (i%2); });
+      .attr("data-row", function(d,i) { return i; })
+      .property("className", function(d,i) { return "data-row" + i + " stripe" + (i%2); });
+
+      function highlighter(item, state) {
+        var col = item.getAttribute("data-col");
+        var row = item.parentNode.getAttribute("data-row");
+        d3.selectAll(".data-col"+col).classed("highlight", state);
+        d3.selectAll(".data-row"+row).classed("highlight", state);
+      }
 
       var cells = rows.selectAll("td")
       .data(function(row) {
@@ -77,7 +89,11 @@
         })
       .enter()
       .append("td")
-      .text(function(d) { return d; });
+      .text(function(d) { return d; })
+      .on("mouseover", function() { highlighter(this, true); })
+      .on("mouseout", function() { highlighter(this, false); })
+      .attr("data-col", function(d,i) { return i; })
+      .property("className", function(d,i) { return "data-col" + i; });
 
       });
   </script>

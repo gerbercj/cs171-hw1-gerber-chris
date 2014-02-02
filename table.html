@@ -24,6 +24,9 @@
     caption {
       font-weight: bold;
     }
+    .stripe0 {
+      background-color: gainsboro;
+    }
   </style>
 </head>
 <body>
@@ -63,7 +66,8 @@
       var rows = tbody.selectAll("tr")
       .data(data)
       .enter()
-      .append("tr");
+      .append("tr")
+      .property("className", function(d,i) { return "stripe" + (i%2); });
 
       var cells = rows.selectAll("td")
       .data(function(row) {

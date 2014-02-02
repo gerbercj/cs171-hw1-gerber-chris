@@ -51,6 +51,13 @@
       var header = [];
       header.push(data.shift());
 
+      function sortColumn(item) {
+        var col = item.getAttribute("data-col");
+        var sortasc = item.getAttribute("data-sortasc");
+        console.log(col, sortasc);
+        item.setAttribute("data-sortasc", !sortasc);
+      }
+
       var headerRows = thead.selectAll("tr")
       .data(header)
       .enter()
@@ -65,7 +72,11 @@
       .enter()
       .append("th")
       .text(function(d) { return d; })
-      .attr("data-col", function(d,i) { return i; });
+      .on("click", function() { sortColumn(this); })
+      .attr({
+        "data-sortasc": true,
+        "data-col": function(d,i) { return i; }
+      });
 
       var rows = tbody.selectAll("tr")
       .data(data)

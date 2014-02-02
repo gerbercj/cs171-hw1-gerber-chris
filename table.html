@@ -11,14 +11,19 @@
 <body>
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script>
+  d3.select("body").append("h1").text("Unemployment Rates for States");
+
   d3.text("unemp_states_us_nov_2013.tsv", function(error, rawData){
 
       var data = d3.tsv.parseRows(rawData);
 
       var table = d3.select("body").append("table"),
+      caption = table.append("caption"),
       thead = table.append("thead"),
       tbody = table.append("tbody");
       
+      caption.html("Unemployment Rates for States<br />Monthly Rankings<br />Seasonally Adjusted<br />Dec. 2013<sup>p</sup>");
+
       var header = [];
       header.push(data.shift());
 

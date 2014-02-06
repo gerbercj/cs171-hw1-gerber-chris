@@ -1,112 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>CS171 Homework 1</title>
+  <head>
+    <meta charset="utf-8" />
+    <title>CS171 Homework 1</title>
 
-  <style type="text/css">
-    body {
-      font: 13px Tahoma, Arial, Helvetica, clean, sans-serif;
-    }
-    h1 {
-      font-size: 180%;
-      font-weight: normal;
-      color: rgb(24, 48, 97);
-    }
-    table {
-      border: 1px solid;
-      border-collapse: collapse;
-    }
-    td, th, caption {
-      border: 1px solid;
-      padding: 3px;
-    }
-    caption {
-      font-weight: bold;
-    }
-    .stripe0 {
-      background-color: gainsboro;
-    }
-    .highlight {
-      background-color: khaki;
-    }
-  </style>
-</head>
-<body>
-  <script src="http://d3js.org/d3.v3.min.js"></script>
-  <script>
-  d3.select("body").append("h1").text("Unemployment Rates for States");
-
-  d3.text("unemp_states_us_nov_2013.tsv", function(error, rawData){
-
-      var data = d3.tsv.parseRows(rawData);
-
-      var table = d3.select("body").append("table"),
-      caption = table.append("caption"),
-      thead = table.append("thead"),
-      tbody = table.append("tbody");
-      
-      caption.html("Unemployment Rates for States<br />Monthly Rankings<br />Seasonally Adjusted<br />Dec. 2013<sup>p</sup>");
-
-      var header = [];
-      header.push(data.shift());
-
-      function sortColumn(item) {
-        var col = item.getAttribute("data-col");
-        var sortasc = item.getAttribute("data-sortasc");
-        console.log(col, sortasc);
-        item.setAttribute("data-sortasc", !sortasc);
+    <style type="text/css">
+      body {
+        font: 13px Tahoma, Arial, Helvetica, clean, sans-serif;
       }
-
-      var headerRows = thead.selectAll("tr")
-      .data(header)
-      .enter()
-      .append("tr");
-
-      var headerCells = headerRows.selectAll("th")
-      .data(function(row) {
-        return d3.range(Object.keys(row).length).map(function(column, i) {
-          return row[Object.keys(row)[i]];
-          });
-        })
-      .enter()
-      .append("th")
-      .text(function(d) { return d; })
-      .on("click", function() { sortColumn(this); })
-      .attr({
-        "data-sortasc": true,
-        "data-col": function(d,i) { return i; }
-      });
-
-      var rows = tbody.selectAll("tr")
-      .data(data)
-      .enter()
-      .append("tr")
-      .attr("data-row", function(d,i) { return i; })
-      .property("className", function(d,i) { return "data-row" + i + " stripe" + (i%2); });
-
-      function highlighter(item, state) {
-        var col = item.getAttribute("data-col");
-        var row = item.parentNode.getAttribute("data-row");
-        d3.selectAll(".data-col"+col).classed("highlight", state);
-        d3.selectAll(".data-row"+row).classed("highlight", state);
+      h1 {
+        font-size: 180%;
+        font-weight: normal;
+        color: rgb(24, 48, 97);
       }
+      table {
+        border: 1px solid;
+        border-collapse: collapse;
+      }
+      td, th, caption {
+        border: 1px solid;
+        padding: 3px;
+      }
+      caption {
+        font-weight: bold;
+      }
+      .stripe0 {
+        background-color: gainsboro;
+      }
+      .highlight {
+        background-color: khaki;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script>
+      d3.select("body").append("h1").text("Unemployment Rates for States")
 
-      var cells = rows.selectAll("td")
-      .data(function(row) {
-        return d3.range(Object.keys(row).length).map(function(column, i) {
-          return row[Object.keys(row)[i]];
-          });
-        })
-      .enter()
-      .append("td")
-      .text(function(d) { return d; })
-      .on("mouseover", function() { highlighter(this, true); })
-      .on("mouseout", function() { highlighter(this, false); })
-      .attr("data-col", function(d,i) { return i; })
-      .property("className", function(d,i) { return "data-col" + i; });
+      d3.text("unemp_states_us_nov_2013.tsv", function(error, rawData) {
+        // Helper functions
+        var highlighter = function(item, state) {
+          var col = item.getAttribute("data-col")
+          var row = item.parentNode.getAttribute("data-row")
+          d3.selectAll(".data-col"+col).classed("highlight", state)
+          d3.selectAll(".data-row"+row).classed("highlight", state)
+        }
 
-      });
-  </script>
-</body>
+        var striper = function() {
+          var rows = tbody.selectAll("tr")
+            .property("className", function(d,i) { return "data-row" + i + " stripe" + (i%2) })
+        }
+
+        var smartSort = function(col, sort, a, b) {
+          return sort * (
+            // Use specified sort column first
+            parseFloat(a[col]) < parseFloat(b[col]) ? -1 : parseFloat(a[col]) > parseFloat(b[col]) ? 1 :
+            // Then use column 1 next
+            a[1] < b[1] ? -1 : a[1] > b[1] ? 1 :
+            // These items seem to be identical...
+            0)
+        }
+
+        var sortColumn = function(item) {
+          var col = item.getAttribute("data-col")
+          var sort = parseInt(item.getAttribute("data-sort"))
+          item.setAttribute("data-sort", sort * -1 )
+          tbody.selectAll("tr").sort(function(a, b) {
+            return smartSort(col, sort, a, b)
+          })
+          striper()
+        }
+
+        // D3 manipulations
+        var data = d3.tsv.parseRows(rawData)
+
+        var table = d3.select("body").append("table"),
+          caption = table.append("caption"),
+          thead = table.append("thead"),
+          tbody = table.append("tbody")
+        
+        caption.html("Unemployment Rates for States<br />Monthly Rankings<br />Seasonally Adjusted<br />Dec. 2013<sup>p</sup>")
+
+        var header = []
+        header.push(data.shift())
+
+        var headerRows = thead.selectAll("tr")
+          .data(header)
+          .enter().append("tr")
+
+        var headerCells = headerRows.selectAll("th")
+          .data(function(row) {
+            return d3.range(Object.keys(row).length).map(function(column, i) {
+              return row[Object.keys(row)[i]]
+              })
+            })
+          .enter().append("th")
+            .text(function(d) { return d })
+            .on("click", function() { sortColumn(this) })
+            .attr({
+              "data-sort": 1,
+              "data-col": function(d,i) { return i }
+            })
+
+        var rows = tbody.selectAll("tr")
+          .data(data)
+          .enter().append("tr")
+            .attr("data-row", function(d,i) { return i })
+
+        var cells = rows.selectAll("td")
+          .data(function(row) {
+            return d3.range(Object.keys(row).length).map(function(column, i) {
+              return row[Object.keys(row)[i]]
+              })
+            })
+          .enter().append("td")
+            .text(function(d) { return d })
+            .on("mouseover", function() { highlighter(this, true) })
+            .on("mouseout", function() { highlighter(this, false) })
+            .attr("data-col", function(d,i) { return i })
+            .property("className", function(d,i) { return "data-col" + i })
+
+        striper()
+      })
+    </script>
+  </body>
 </html>

@@ -30,6 +30,12 @@
       .highlight {
         background-color: khaki;
       }
+      .sortasc {
+        cursor: s-resize;
+      }
+      .sortdesc {
+        cursor: n-resize;
+      }
     </style>
   </head>
   <body>
@@ -49,6 +55,7 @@
         var striper = function() {
           var rows = tbody.selectAll("tr")
             .property("className", function(d,i) { return "data-row" + i + " stripe" + (i%2) })
+            .attr("data-row", function(d,i) { return i })
         }
 
         var smartSort = function(col, sort, a, b) {
@@ -65,6 +72,7 @@
           var col = item.getAttribute("data-col")
           var sort = parseInt(item.getAttribute("data-sort"))
           item.setAttribute("data-sort", sort * -1 )
+          item.className = (sort == 1) ? "sortasc" : "sortdesc"
           tbody.selectAll("tr").sort(function(a, b) {
             return smartSort(col, sort, a, b)
           })
@@ -101,11 +109,11 @@
               "data-sort": 1,
               "data-col": function(d,i) { return i }
             })
+            .property("className", "sortdesc")
 
         var rows = tbody.selectAll("tr")
           .data(data)
           .enter().append("tr")
-            .attr("data-row", function(d,i) { return i })
 
         var cells = rows.selectAll("td")
           .data(function(row) {

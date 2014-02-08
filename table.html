@@ -24,9 +24,6 @@
       caption {
         font-weight: bold;
       }
-      .stripe0 {
-        background-color: gainsboro;
-      }
       .highlight {
         background-color: khaki;
       }
@@ -45,17 +42,21 @@
 
       d3.text("unemp_states_us_nov_2013.tsv", function(error, rawData) {
         // Helper functions
-        var highlighter = function(item, state) {
-          var col = item.getAttribute("data-col")
-          var row = item.parentNode.getAttribute("data-row")
-          d3.selectAll(".data-col"+col).classed("highlight", state)
-          d3.selectAll(".data-row"+row).classed("highlight", state)
-        }
+        var stripeColor = function(index) { return (index % 2) ? '' : 'gainsboro' } 
 
         var striper = function() {
-          var rows = tbody.selectAll("tr")
-            .property("className", function(d,i) { return "data-row" + i + " stripe" + (i%2) })
-            .attr("data-row", function(d,i) { return i })
+          rows.style("background-color", function(d,i) { return stripeColor(i) })
+        }
+
+        var highlighter = function(item, state) {
+          var col = item.cellIndex
+          var row = item.parentNode.rowIndex
+          rows.style("background-color", function(d,i) {
+            return ((i == row-1) && state) ? 'khaki' : stripeColor(i)
+          }) 
+          cells.style("background-color", function(d,i) {
+            return ((i == col) && state) ? 'khaki' : ''
+          })
         }
 
         var smartSort = function(col, sort, a, b) {
@@ -69,11 +70,11 @@
         }
 
         var sortColumn = function(item) {
-          var col = item.getAttribute("data-col")
+          var col = item.cellIndex
           var sort = parseInt(item.getAttribute("data-sort"))
           item.setAttribute("data-sort", sort * -1 )
           item.className = (sort == 1) ? "sortasc" : "sortdesc"
-          tbody.selectAll("tr").sort(function(a, b) {
+          rows.sort(function(a, b) {
             return smartSort(col, sort, a, b)
           })
           striper()
@@ -105,10 +106,7 @@
           .enter().append("th")
             .text(function(d) { return d })
             .on("click", function() { sortColumn(this) })
-            .attr({
-              "data-sort": 1,
-              "data-col": function(d,i) { return i }
-            })
+            .attr("data-sort", 1)
             .property("className", "sortdesc")
 
         var rows = tbody.selectAll("tr")
@@ -125,8 +123,6 @@
             .text(function(d) { return d })
             .on("mouseover", function() { highlighter(this, true) })
             .on("mouseout", function() { highlighter(this, false) })
-            .attr("data-col", function(d,i) { return i })
-            .property("className", function(d,i) { return "data-col" + i })
 
         striper()
       })

@@ -88,6 +88,11 @@
           thead = table.append("thead"),
           tbody = table.append("tbody")
         
+        var color = d3.scale.linear()
+          .domain([0, tbody.selectAll("tr")[0].length-1])
+          .interpolate(d3.interpolateRgb)
+          .range(["orangered", "silver"])
+
         caption.html("Unemployment Rates for States<br />Monthly Rankings<br />Seasonally Adjusted<br />Dec. 2013<sup>p</sup>")
 
         var header = []

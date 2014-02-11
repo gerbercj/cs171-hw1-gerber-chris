@@ -110,20 +110,22 @@
           .data(data)
           .enter().append("tr")
 
+        var rateCol = function(value, index) { return value[2] }
+
         var color = d3.scale.linear()
-          .domain([0, tbody.selectAll("tr")[0].length-1])
+          .domain([ d3.min(data.map(rateCol)), d3.max(data.map(rateCol)) ])
           .interpolate(d3.interpolateRgb)
           .range(["orangered", "silver"])
 
         var cells = rows.selectAll("td")
           .data(function(row) {
             return d3.range(Object.keys(row).length).map(function(column, i) {
-              return [row[Object.keys(row)[i]], row[0]]
+              return row[Object.keys(row)[i]]
               })
             })
           .enter().append("td")
-            .text(function(d) { return d[0] })
-            .style("background-color", function(d,i) { return i==2 ? color(d[1]) : '' })
+            .text(function(d) { return d })
+            .style("background-color", function(d,i) { return i==2 ? color(d) : '' })
             .on("mouseover", function() { highlighter(this, true) })
             .on("mouseout", function() { highlighter(this, false) })
 

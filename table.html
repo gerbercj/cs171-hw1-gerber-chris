@@ -24,6 +24,9 @@
       caption {
         font-weight: bold;
       }
+      .stripe {
+        background-color: gainsboro;
+      }
       .highlight {
         background-color: khaki;
       }
@@ -42,28 +45,22 @@
 
       d3.text("unemp_states_us_nov_2013.tsv", function(error, rawData) {
         // Helper functions
-        var stripeColor = function(index) { return (index % 2) ? '' : 'gainsboro' } 
-
         var striper = function() {
-          rows.style("background-color", function(d,i) { return stripeColor(i) })
+          rows.classed("stripe", function(d,i) { return (i % 2) == 0 })
         }
 
         var highlighter = function(item, state) {
           var col = item.cellIndex
           var row = item.parentNode.rowIndex
-          rows.style("background-color", function(d,i) {
-            return ((i == row-1) && state) ? 'khaki' : stripeColor(i)
-          }) 
-          cells.style("background-color", function(d,i) {
-            return ((i == col) && state) ? 'khaki' : ''
-          })
+          rows.classed("highlight", function(d,i) { return (i == row-1) && state })
+          cells.classed("highlight", function(d,i) { return (i == col) && state })
         }
 
         var smartSort = function(col, sort, a, b) {
           return sort * (
             // Use specified sort column first
             parseFloat(a[col]) < parseFloat(b[col]) ? -1 : parseFloat(a[col]) > parseFloat(b[col]) ? 1 :
-            // Then use column 1 next
+            // Then use column 1 next (magical, but the spec can not be generalize)
             a[1] < b[1] ? -1 : a[1] > b[1] ? 1 :
             // These items seem to be identical...
             0)
@@ -88,11 +85,6 @@
           thead = table.append("thead"),
           tbody = table.append("tbody")
         
-        var color = d3.scale.linear()
-          .domain([0, tbody.selectAll("tr")[0].length-1])
-          .interpolate(d3.interpolateRgb)
-          .range(["orangered", "silver"])
-
         caption.html("Unemployment Rates for States<br />Monthly Rankings<br />Seasonally Adjusted<br />Dec. 2013<sup>p</sup>")
 
         var header = []
@@ -118,14 +110,20 @@
           .data(data)
           .enter().append("tr")
 
+        var color = d3.scale.linear()
+          .domain([0, tbody.selectAll("tr")[0].length-1])
+          .interpolate(d3.interpolateRgb)
+          .range(["orangered", "silver"])
+
         var cells = rows.selectAll("td")
           .data(function(row) {
             return d3.range(Object.keys(row).length).map(function(column, i) {
-              return row[Object.keys(row)[i]]
+              return [row[Object.keys(row)[i]], row[0]]
               })
             })
           .enter().append("td")
-            .text(function(d) { return d })
+            .text(function(d) { return d[0] })
+            .style("background-color", function(d,i) { return i==2 ? color(d[1]) : '' })
             .on("mouseover", function() { highlighter(this, true) })
             .on("mouseout", function() { highlighter(this, false) })
 

@@ -67,7 +67,7 @@
         }
 
         var sortColumn = function(item) {
-          var col = item.cellIndex
+          var col = (item.cellIndex < 3) ? item.cellIndex : 2
           var sort = parseInt(item.getAttribute("data-sort"))
           item.setAttribute("data-sort", sort * -1 )
           item.className = (sort == 1) ? "sortasc" : "sortdesc"
@@ -89,6 +89,7 @@
 
         var header = []
         header.push(data.shift())
+        header[0].push("Chart")
 
         var headerRows = thead.selectAll("tr")
           .data(header)
@@ -128,6 +129,13 @@
             .style("background-color", function(d,i) { return i==2 ? color(d) : '' })
             .on("mouseover", function() { highlighter(this, true) })
             .on("mouseout", function() { highlighter(this, false) })
+
+        rows.insert("td").append("svg")
+          .attr("width", rows[0].length)
+          .attr("height", this.height)
+          .append("rect")
+          .attr("height", 7)
+          .attr("width", function(d) { return parseFloat(d[0]) })
 
         striper()
       })

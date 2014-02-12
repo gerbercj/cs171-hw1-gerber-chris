@@ -20,6 +20,7 @@
   <script type="text/javascript">
 
     var margin = {top: 50, bottom: 10, left:300, right: 40}
+    // Having the total maintained seems more logical to me
     var total_width = 900, total_height = 900
     var width = total_width - margin.left - margin.right
     var height = total_height - margin.top - margin.bottom
@@ -31,6 +32,7 @@
 
     var state = function(d) { return d.State }
 
+    // Let's save sort order in a variable this time, not the DOM
     var sortOrder = { "State":1, "Rate":-1 }
 
     var stateSort = function(a, b) {
@@ -40,6 +42,7 @@
     var rateSort = function(a, b) {
       return sortOrder.Rate * (
         parseFloat(a.Rate) < parseFloat(b.Rate) ? -1 : parseFloat(a.Rate) > parseFloat(b.Rate) ? 1 :
+        // When the rates are the same, sort by state next
         a.State < b.State ? -1 : a.State > b.State ? 1 :
         0)
     }
@@ -90,6 +93,7 @@
         .attr("x", function(d) { 0 } )
         .attr("y", function(d) { return bar_height/2 })
         .attr("text-anchor", "end")
+        // These nudges make things look better to me
         .attr("dx", -5)
         .attr("dy", 3)
 
@@ -107,9 +111,11 @@
            if (i==0) return stateSort(a, b)
            else return rateSort(a,b)
         })
+
         if (i==0) sortOrder.State = -sortOrder.State
         else sortOrder.Rate = -sortOrder.Rate
 
+        // Create a new scale based upon the results of the sort
         var scale = d3.scale.ordinal().rangeRoundBands([0, height], .8, 0)
           .domain(data.map(state))
 
@@ -118,6 +124,7 @@
           .duration(750)
           .delay(function(d, i) { return i * 10 })
           .attr("transform", function(d, i) {
+            // Use the new scape to determine the new location
             return "translate(0, "+ scale(d.State) +")"
           })
       }

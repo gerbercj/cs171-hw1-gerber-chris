@@ -51,8 +51,8 @@
 
         var highlighter = function(item, state) {
           var col = item.cellIndex
-          var row = item.parentNode.rowIndex
-          rows.classed("highlight", function(d,i) { return (i == row-1) && state })
+          var row = item.parentNode.rowIndex-1
+          rows.classed("highlight", function(d,i) { return (i == row) && state })
           cells.classed("highlight", function(d,i) { return (i == col) && state })
         }
 
@@ -60,14 +60,16 @@
           return sort * (
             // Use specified sort column first
             parseFloat(a[col]) < parseFloat(b[col]) ? -1 : parseFloat(a[col]) > parseFloat(b[col]) ? 1 :
-            // Then use column 1 next (magical, but the spec can not be generalize)
+            // Then use column 1 next (magical, but we know column 1 is State
             a[1] < b[1] ? -1 : a[1] > b[1] ? 1 :
             // These items seem to be identical...
             0)
         }
 
         var sortColumn = function(item) {
+          // If we get extra columns they will be sorted by Rate
           var col = (item.cellIndex < 3) ? item.cellIndex : 2
+          // I decided to save the asc/desc state for each column in the DOM
           var sort = parseInt(item.getAttribute("data-sort"))
           item.setAttribute("data-sort", sort * -1 )
           item.className = (sort == 1) ? "sortasc" : "sortdesc"
@@ -77,18 +79,19 @@
           striper()
         }
 
-        // D3 manipulations
+        // Now let's deal with the TSV data
         var data = d3.tsv.parseRows(rawData)
 
         var table = d3.select("body").append("table"),
           caption = table.append("caption"),
           thead = table.append("thead"),
           tbody = table.append("tbody")
-        
+
         caption.html("Unemployment Rates for States<br />Monthly Rankings<br />Seasonally Adjusted<br />Dec. 2013<sup>p</sup>")
 
         var header = []
         header.push(data.shift())
+        // Let's add the chart column
         header[0].push("Chart")
 
         var headerRows = thead.selectAll("tr")
@@ -126,6 +129,7 @@
             })
           .enter().append("td")
             .text(function(d) { return d })
+            // Only add gradient to column 2
             .style("background-color", function(d,i) { return i==2 ? color(d) : '' })
             .on("mouseover", function() { highlighter(this, true) })
             .on("mouseout", function() { highlighter(this, false) })
@@ -134,6 +138,7 @@
           .attr("width", rows[0].length)
           .attr("height", this.height)
           .append("rect")
+          // 7 is a size that I liked... it's arbitrary
           .attr("height", 7)
           .attr("width", function(d) { return parseFloat(d[0]) })
 

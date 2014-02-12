@@ -53,7 +53,7 @@
           var col = item.cellIndex
           var row = item.parentNode.rowIndex-1
           rows.classed("highlight", function(d,i) { return (i == row) && state })
-          cells.classed("highlight", function(d,i) { return (i == col) && state })
+          rows.selectAll("td").classed("highlight", function(d,i) { return (i == col) && state })
         }
 
         var smartSort = function(col, sort, a, b) {
@@ -134,13 +134,16 @@
             .on("mouseover", function() { highlighter(this, true) })
             .on("mouseout", function() { highlighter(this, false) })
 
-        rows.insert("td").append("svg")
-          .attr("width", rows[0].length)
-          .attr("height", this.height)
+        rows.append("td")
+          .on("mouseover", function() { highlighter(this, true) })
+          .on("mouseout", function() { highlighter(this, false) })
+          .append("svg")
+            .attr("width", rows[0].length)
+            .attr("height", this.height)
           .append("rect")
-          // 7 is a size that I liked... it's arbitrary
-          .attr("height", 7)
-          .attr("width", function(d) { return parseFloat(d[0]) })
+            // 7 is a size that I liked... it's arbitrary
+            .attr("height", 7)
+            .attr("width", function(d) { return parseFloat(d[0]) })
 
         striper()
       })
